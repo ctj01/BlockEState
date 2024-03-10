@@ -4,15 +4,33 @@ import { useEffect, useState } from "react";
 import abi from '../../artifacts/contracts/Example.sol/Example.json'
 import { ethers } from "ethers";
 import PrimaryButton from "../components/primary-button";
-import Input from "@/components/input";
+import FormRegister from "@/components/FormRegister";
+import { NFTStorage } from 'nft.storage'
+
+
+
+
 
 export default function Home() {
   const [ethereum, setEthereum] = useState(undefined);
   const [connectedAccount, setConnectedAccount] = useState(undefined);
-  const [userToCreate, setUserToCreate] = useState({ name: '', age: '' });
+  const [realEstateToCreate, setRealEstateToCreate] = useState({ name: '', description: '', image: '', location: '', price: '', address: '', createdAt: '', area: '', rooms: '', bathrooms: '', garage: '', isSold: '' })
   const [users, setUsers] = useState([])
   const ABI = abi.abi
   const contractExample = process.env.NEXT_PUBLIC_EXAMPLE_CONTRACT_ADDRESS
+  const NFT_STORAGE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEQxM2QyNkFjZTE3ZTg1ZTAzYkY4QWRBODYzNTQwZTI0RTQwQ0FBZWIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcxMDAxMzYyMzc5MSwibmFtZSI6IkJsb2NrRXN0YXRlIn0.4X40wqlRtum6XitNHgUJnNeNNIYjsahLDqdQgbHPxOI'
+  const client = new NFTStorage({ token: NFT_STORAGE_TOKEN })
+  const getFiles = async () => {
+    const files = await client.check('bafkreigwoxjqrafculs46ahnmtswkp2cfpdebex7dmnvjqcvuejk5zvcaa')
+    console.log(files)
+  }
+  const getFilesContent = async () => {
+    await fetch('https://bafkreigwoxjqrafculs46ahnmtswkp2cfpdebex7dmnvjqcvuejk5zvcaa.ipfs.nftstorage.link/', {
+      method: 'GET',
+      headers: {}
+    }
+    ).then(response => console.log(response.json()))
+  }
 
   const getUsers = async () => {
     if (ethereum && connectedAccount) {
@@ -66,18 +84,16 @@ export default function Home() {
     }
 
   }
-  const handleChange = (e) => {
-    setUserToCreate({ ...userToCreate, [e.target.name]: e.target.value });
-  }
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    await createUser(userToCreate.name, userToCreate.age)
+    e.preventDefault();
   }
   useEffect(() => {
     getUsers()
   }, []);
   useEffect(() => {
     getConnectedAccount();
+    getFiles();
+    getFilesContent();
   }, []);
 
    
@@ -94,21 +110,8 @@ export default function Home() {
             </div>
           ) : (
             <div className="mt-6">
-              <h4 className="font-bold text-base">User register</h4>
-              <form className="mt-6">
-                <div class="grid gap-6 mb-6 md:grid-cols-2">
-                  <div className="form-group">
-                    <Input type="text" name="name" placeholder="Enter your name" value={userToCreate.name} onChange={handleChange} />
-                  </div>
-                  <div className="form-group">
-                    <Input type="number" name="age" placeholder="Enter your age" value={userToCreate.age} onChange={handleChange} />
-                  </div>
-                </div>
-
-                <br />
-                <br />
+               <FormRegister realEstateToCreate={realEstateToCreate} />
                 <PrimaryButton onClick={handleSubmit}>Submit</PrimaryButton>
-              </form>
               <div class="relative overflow-x-auto mt-6">
                   <h4 className="font-bold text-base">Users</h4>
                   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6">

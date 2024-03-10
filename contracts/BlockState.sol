@@ -57,14 +57,25 @@ contract RealStateNFT is ERC721URIStorage, AccessControl {
         require(_exists(tokenId), "Token does not exist");
         _;
     }
+    modifier tokenOwner(uint256 tokenId) {
+        require(tokenOwners[tokenId] == msg.sender, "You are not the owner of this token");
+        _;
+    }
+    modifier checkBalance(uint256 tokenId) {
+        require(msg.value >= nftPrice[tokenId], "Insufficient balance");
+        _;
+    }
 
     function tokenURI(uint256 tokenId)
         public view override(ERC721URIStorage) returns (string memory)
     {
         return super.tokenURI(tokenId);
     }
-    function transferOwnershipToken(address from, address to, uint256 tokenId) public {
+    function transferOwnershipToken(address from, address to, uint256 tokenId, uint256 price) public {
         require(hasRole(MANAGER_ROLE, msg.sender), "Caller is not a manager");
+        require(tokenOwners[tokenId] == from, "You are not the owner of this token");
+        require(nftPrice[tokenId] == price, "Price is not correct");
+        require(msg.value >= price, "Insufficient balance");
         _transfer(from, to, tokenId);
     }
 
